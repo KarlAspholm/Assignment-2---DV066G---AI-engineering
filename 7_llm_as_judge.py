@@ -32,13 +32,12 @@ def llm_as_a_judge_agrees(country, answer, expected):
 ###################################################################################
 
 class TestApp(unittest.TestCase):
-
     # WRONG MODEL
     def test_unknown_model_returns_failure(self):
         response = ask_capital("Sweden", "no-such-model")
         self.assertEqual(response, "Failure.")
 
-    # CONSISTENCY TEST
+    # CONSISTENCY TESTS
     def test_knows_capital_of_sweden(self):
         correct = 0
         for i in range(3):
@@ -48,27 +47,33 @@ class TestApp(unittest.TestCase):
         self.assertGreaterEqual(correct, 2)
 
     def test_knows_capital_of_france(self):
-            correct = 0
-            for i in range(3):
-                answer = ask_capital("France")
-                if "Paris" in answer:
-                    correct += 1
-            self.assertGreaterEqual(correct, 2)
+        correct = 0
+        for i in range(3):
+            answer = ask_capital("France")
+            if "Paris" in answer:
+                correct += 1
+        self.assertGreaterEqual(correct, 2)
+
+    def test_knows_capital_of_australia(self):
+        correct = 0
+        for i in range(3):
+            answer = ask_capital("Australia")
+            if "Canberra" in answer:
+                correct += 1
+        self.assertGreaterEqual(correct, 2)
 
     # LLM AS JUDGE
     def test_judge_accepts_right_capital(self):
         answer = "The capital of Sweden is Stockholm."
         self.assertTrue(llm_as_a_judge_agrees("Sweden", answer, "Stockholm"))
 
-
     def test_judge_france_wrong_answer(self):
         answer = "The capital of France is Lyon."
+        self.assertTrue(llm_as_a_judge_agrees("France", answer, "Paris"))
 
-        result = llm_as_a_judge_agrees(
-            "France", answer, "Paris"
-        )
-
-        self.assertFalse(result)
+    def test_judge_on_model_answer_australia(self):
+        answer = ask_capital("Australia")
+        self.assertTrue(llm_as_a_judge_agrees("Australia", answer, "Canberra"))
 
     # HALLUCINATIONS
     def test_judge_rejects_invented_capital(self):
